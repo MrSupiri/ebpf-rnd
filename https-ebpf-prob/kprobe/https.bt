@@ -1,0 +1,101 @@
+#ifndef BPFTRACE_HAVE_BTF
+#include <uapi/linux/ptrace.h>
+#include <net/sock.h>
+#else
+#include <sys/socket.h>
+#endif
+
+
+BEGIN
+{
+	printf("Probing...\n");
+}
+
+kprobe:tcp_sendmsg,
+kprobe:tcp_sendpage {
+
+    $sk = (struct sock *)arg0;
+
+    @sock_store[tid] = $sk;
+
+}
+
+
+kretprobe:tcp_sendmsg,
+kretprobe:tcp_sendpage 
+/@sock_store[tid]/
+{
+
+    $sockpp = @sock_store[tid];
+    delete(@sock_store[tid]);
+
+    $saddr = $sockpp->__sk_common.skc_rcv_saddr;
+    $lport = $sockpp->__sk_common.skc_num;
+    $daddr = $sockpp->__sk_common.skc_daddr;
+    $dport = $sockpp->__sk_common.skc_dport;
+
+    @sent_bytes[pid, $saddr, $lport, $daddr, $dport] = retval;
+    @birth[pid, $saddr, $lport, $daddr, $dport] = nsecs;
+}
+
+kprobe:tcp_cleanup_rbuf
+{
+    $sockpp = (struct sock *)arg0;
+    $rx_b = arg1;
+
+    $saddr = $sockpp->__sk_common.skc_rcv_saddr;
+    $lport = $sockpp->__sk_common.skc_num;
+    $daddr = $sockpp->__sk_common.skc_daddr;
+    $dport = $sockpp->__sk_common.skc_dport;
+
+    $birth_time = @birth[pid, $saddr, $lport, $daddr, $dport];
+    $tx_b = @sent_bytes[pid, $saddr, $lport, $daddr, $dport];
+
+    if($birth_time == 0 || $tx_b == 0){
+        return;
+    }
+
+    delete(@birth[pid, $saddr, $lport, $daddr, $dport]);
+    delete(@sent_bytes[pid, $saddr, $lport, $daddr, $dport]);
+
+    $delta_ms = (nsecs - $birth_time) / 1e6;
+
+    if ($delta_ms <= 0) {
+        return;
+    }
+
+    $dport = ($dport >> 8) | (($dport << 8) & 0x00FF00);
+
+    // Uncomment to limit to HTTPs traffics
+    //if($dport != 443){
+    //    return;
+    //}
+
+    $family = $sockpp->__sk_common.skc_family;
+    
+    $saddr_p = ntop(0);
+    $daddr_p = ntop(0);
+    
+    $AF_INET = (uint16) 2;
+    $AF_INET6 = (uint16) 10;
+
+    if ($family == $AF_INET) {
+        $saddr_p = ntop($AF_INET, $sockpp->__sk_common.skc_rcv_saddr);
+        $daddr_p = ntop($AF_INET, $sockpp->__sk_common.skc_daddr);
+    } else {
+        // AF_INET6
+        $saddr_p = ntop($AF_INET6, $sockpp->__sk_common.skc_v6_rcv_saddr.in6_u.u6_addr8);
+        $daddr_p = ntop($AF_INET6, $sockpp->__sk_common.skc_v6_daddr.in6_u.u6_addr8);
+    }
+    
+    // printf("time_:%llu pid:%d pid_start_time:%d src_ip:%s src_port:%d dst_ip:%s dst_port:%d transmitted_bytes:%d received_bytes:%d latency:%d", nsecs, pid, ((struct task_struct*)curtask)->group_leader->start_time / 10000000, $saddr_p, $lport, $daddr_p, $dport, $tx_b, $rx_b, $delta_ms);   
+
+    printf("time_:%llu pid:%d src_ip:%s src_port:%d dst_ip:%s dst_port:%d transmitted_bytes:%d received_bytes:%d latency:%d", nsecs, pid, $saddr_p, $lport, $daddr_p, $dport, $tx_b, $rx_b, $delta_ms);   
+}
+
+END
+{
+    clear(@sent_bytes);
+    clear(@birth);
+    clear(@sock_store);
+}

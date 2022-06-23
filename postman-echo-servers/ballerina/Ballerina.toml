@@ -1,0 +1,8 @@
+[package]
+org = "supiri"
+name = "postman_echo_ballerina"
+version = "0.1.0"
+distribution = "2201.1.0"
+
+[build-options]
+observabilityIncluded = true

@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postman-echo-go
+  labels:
+    app: postman-echo-go
+spec:
+  selector:
+    matchLabels:
+      app: postman-echo-go
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: postman-echo-go
+    spec:
+      containers:
+        - name: postman-echo-go
+          image: docker.io/supiri/postman-echo-go:latest
+          ports:
+            - name: http
+              containerPort: 9092
+          env:
+            - name: GODEBUG
+              value: "http2client=0"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postman-echo-go
+spec:
+  #type: NodePort
+  selector:
+    app: postman-echo-go
+  ports:
+    - port: 80
+      targetPort: http

@@ -60,7 +60,10 @@ kprobe:tcp_cleanup_rbuf
 
     $delta_ms = (nsecs - $birth_time) / 1e6;
 
-    if ($delta_ms <= 0) {
+    //if ($delta_ms <= 0) {
+    //    return;
+    //}
+    if (pid != 77469){
         return;
     }
 
@@ -87,10 +90,11 @@ kprobe:tcp_cleanup_rbuf
         $saddr_p = ntop($AF_INET6, $sockpp->__sk_common.skc_v6_rcv_saddr.in6_u.u6_addr8);
         $daddr_p = ntop($AF_INET6, $sockpp->__sk_common.skc_v6_daddr.in6_u.u6_addr8);
     }
+
     
     // printf("time_:%llu pid:%d pid_start_time:%d src_ip:%s src_port:%d dst_ip:%s dst_port:%d transmitted_bytes:%d received_bytes:%d latency:%d", nsecs, pid, ((struct task_struct*)curtask)->group_leader->start_time / 10000000, $saddr_p, $lport, $daddr_p, $dport, $tx_b, $rx_b, $delta_ms);   
 
-    printf("time_:%llu pid:%d src_ip:%s src_port:%d dst_ip:%s dst_port:%d transmitted_bytes:%d received_bytes:%d latency:%d", nsecs, pid, $saddr_p, $lport, $daddr_p, $dport, $tx_b, $rx_b, $delta_ms);   
+    printf("time_:%llu pid:%d tid:%d src_ip:%s src_port:%d dst_ip:%s dst_port:%d transmitted_bytes:%d received_bytes:%d latency:%d\n", nsecs, pid,  tid, $saddr_p, $lport, $daddr_p, $dport, $tx_b, $rx_b, $delta_ms);   
 }
 
 END

@@ -34,8 +34,8 @@ kretprobe:tcp_sendpage
     $daddr = $sockpp->__sk_common.skc_daddr;
     $dport = $sockpp->__sk_common.skc_dport;
 
-    @sent_bytes[pid, $saddr, $lport, $daddr, $dport] = retval;
-    @birth[pid, $saddr, $lport, $daddr, $dport] = nsecs;
+    @sent_bytes[pid, tid, $saddr, $lport, $daddr, $dport] = retval;
+    @birth[pid, tid, $saddr, $lport, $daddr, $dport] = nsecs;
 }
 
 kprobe:tcp_cleanup_rbuf
@@ -48,22 +48,22 @@ kprobe:tcp_cleanup_rbuf
     $daddr = $sockpp->__sk_common.skc_daddr;
     $dport = $sockpp->__sk_common.skc_dport;
 
-    $birth_time = @birth[pid, $saddr, $lport, $daddr, $dport];
-    $tx_b = @sent_bytes[pid, $saddr, $lport, $daddr, $dport];
+    $birth_time = @birth[pid, tid, $saddr, $lport, $daddr, $dport];
+    $tx_b = @sent_bytes[pid, tid, $saddr, $lport, $daddr, $dport];
 
     if($birth_time == 0 || $tx_b == 0){
         return;
     }
 
-    delete(@birth[pid, $saddr, $lport, $daddr, $dport]);
-    delete(@sent_bytes[pid, $saddr, $lport, $daddr, $dport]);
+    delete(@birth[pid, tid, $saddr, $lport, $daddr, $dport]);
+    delete(@sent_bytes[pid, tid, $saddr, $lport, $daddr, $dport]);
 
     $delta_ms = (nsecs - $birth_time) / 1e6;
 
     //if ($delta_ms <= 0) {
     //    return;
     //}
-    if (pid != 77469){
+    if (pid != 37961){
         return;
     }
 

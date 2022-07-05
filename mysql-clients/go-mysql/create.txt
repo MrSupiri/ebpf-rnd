@@ -1,0 +1,18 @@
+# Create a database
+CREATE DATABASE pixie;
+
+# Create a table
+CREATE TABLE Persons (
+    PersonID int,
+    LastName varchar(255),
+    FirstName varchar(255),
+    Address varchar(255),
+    City varchar(255)
+);
+
+
+# Insert Records
+INSERT INTO Persons (PersonID, LastName, FirstName, Address, City) VALUES (1, 'Tom B. Erichsen', 'Skagen 21', 'Stavanger', '4006');
+
+# Read all data
+SELECT * FROM Persons;

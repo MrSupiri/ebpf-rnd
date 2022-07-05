@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bal-mysql
+  labels:
+    app: bal-mysql
+spec:
+  selector:
+    matchLabels:
+      app: bal-mysql
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: bal-mysql
+    spec:
+      containers:
+        - name: bal-mysql
+          image: lakshankarunathilake/bal-mysql:0.0.2
+        
+          imagePullPolicy: Never

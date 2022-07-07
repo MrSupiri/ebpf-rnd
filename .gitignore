@@ -3,3 +3,5 @@ data.blob
 grpc-go
 DigiCertGlobalRootCA.crt.pem
 .env
+.idea
+__pycache__

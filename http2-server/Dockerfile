@@ -4,12 +4,10 @@ FROM golang:1.18-alpine AS builder
 ARG BUILDER_WORKSPACE
 WORKDIR ${BUILDER_WORKSPACE}
 
-COPY go.mod .
-COPY go.sum .
+COPY . .
 
 RUN go install
 
-COPY . .
 
 RUN go build -o program main.go
 

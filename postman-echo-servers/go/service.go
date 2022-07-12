@@ -28,6 +28,7 @@ func main() {
 			return
 		}
 		fmt.Printf("Body : %s\n", body)
+		fmt.Fprintf(w, "Hello, %v, http: %v\n", r.URL.Path, r.TLS == nil)
 	})
 
 	http.HandleFunc("/http", func(w http.ResponseWriter, r *http.Request) {
@@ -45,6 +46,7 @@ func main() {
 			return
 		}
 		fmt.Printf("Body : %s\n", body)
+		fmt.Fprintf(w, "Hello, %v, http: %v\n", r.URL.Path, r.TLS == nil)
 	})
 
 	http.HandleFunc("/https/large", func(w http.ResponseWriter, r *http.Request) {
@@ -71,9 +73,11 @@ func main() {
 			return
 		}
 		fmt.Printf("Body : %s\n", body)
+		fmt.Fprintf(w, "Hello, %v, http: %v\n", r.URL.Path, r.TLS == nil)
 	})
 
 	http.HandleFunc("/empty", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, "Hello, %v, http: %v\n", r.URL.Path, r.TLS == nil)
 		return
 	})
 

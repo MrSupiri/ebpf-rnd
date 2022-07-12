@@ -17,6 +17,7 @@ spec:
       containers:
         - name: postman-echo-go
           image: docker.io/supiri/postman-echo-go:latest
+          imagePullPolicy: Always
           ports:
             - name: http
               containerPort: 9092

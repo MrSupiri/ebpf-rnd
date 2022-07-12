@@ -17,6 +17,7 @@ spec:
       containers:
         - name: http2-server-go
           image: docker.io/supiri/http2-server-go:latest
+          imagePullPolicy: Always
           ports:
             - name: http
               containerPort: 9092
